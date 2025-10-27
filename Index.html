@@ -20,20 +20,12 @@
     input[type=text],input[type=email],input[type=tel],select,input[type=datetime-local]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit}
     .col{flex:1}
     .small{width:160px}
-    .controls{display:flex;gap:8px;align-items:end}
     .btn{background:var(--accent);border:none;padding:10px 14px;border-radius:8px;color:white;font-weight:600;cursor:pointer}
     .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
     .hint{font-size:12px;color:var(--muted)}
-    .suggestions{position:relative}
-    .list{position:absolute;left:0;right:0;top:44px;background:#071022;border-radius:8px;max-height:160px;overflow:auto;border:1px solid rgba(255,255,255,0.04);z-index:30}
-    .list div{padding:10px;border-bottom:1px dashed rgba(255,255,255,0.02);cursor:pointer}
-    .list div:hover{background:rgba(255,255,255,0.02)}
-
-    .admin{margin-top:18px}
     table{width:100%;border-collapse:collapse;font-size:13px}
     th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:left}
     th{background:rgba(255,255,255,0.02);font-weight:600}
-
     footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
     @media(max-width:720px){.row{flex-direction:column}.small{width:100%}}
   </style>
@@ -44,232 +36,119 @@
       <div class="logo">R w M</div>
       <div>
         <h1>Ride w me Cabo — Reserva de transporte privado</h1>
-        <p class="lead">Servicio en Los Cabos, Baja California Sur — reserva Round Trip o One Way. Los registros quedan guardados localmente; opcionalmente puedes conectar Firebase.</p>
+        <p class="lead">Servicio en Los Cabos, Baja California Sur — reserva Round Trip o One Way.</p>
       </div>
     </header>
 
     <div class="card">
       <form id="bookingForm">
-        <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
-          <label style="display:flex;gap:8px;align-items:center"><input type="radio" name="tripType" value="oneway" checked> One Way</label>
-          <label style="display:flex;gap:8px;align-items:center"><input type="radio" name="tripType" value="roundtrip"> Round Trip</label>
+        <label>Tipo de viaje:</label><br>
+        <label><input type="radio" name="tripType" value="oneway" checked> One Way</label>
+        <label><input type="radio" name="tripType" value="roundtrip"> Round Trip</label>
 
-          <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-            <button type="button" class="btn ghost" id="useGeo">Usar mi ubicación</button>
-            <button type="button" class="btn ghost" id="clearForm">Limpiar</button>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col suggestions">
-            <label for="pickup">Punto de partida</label>
-            <input id="pickup" type="text" placeholder="Escribe o elige un lugar (ej. Cabo San Lucas)" autocomplete="off">
-            <div id="pickupList" class="list" style="display:none"></div>
-          </div>
-          <div class="col suggestions">
-            <label for="dropoff">Dirección destino</label>
-            <input id="dropoff" type="text" placeholder="Ej. Hotel, dirección o aeropuerto" autocomplete="off">
-            <div id="dropoffList" class="list" style="display:none"></div>
-          </div>
+        <div class="row" style="margin-top:12px">
+          <div class="col"><label>Punto de partida</label><input id="pickup" type="text" placeholder="Ej. Cabo San Lucas" required></div>
+          <div class="col"><label>Destino</label><input id="dropoff" type="text" placeholder="Ej. Aeropuerto de Los Cabos" required></div>
         </div>
 
         <div class="row" style="margin-top:12px">
-          <div class="col small">
-            <label for="date">Fecha y hora (salida)</label>
-            <input id="date" type="datetime-local">
-          </div>
-          <div class="col small" id="returnWrap" style="display:none">
-            <label for="returnDate">Fecha y hora (regreso)</label>
-            <input id="returnDate" type="datetime-local">
-          </div>
-          <div class="col small">
-            <label for="passengers">Pasajeros</label>
+          <div class="col"><label>Fecha / Hora salida</label><input id="date" type="datetime-local" required></div>
+          <div class="col" id="returnWrap" style="display:none"><label>Fecha / Hora regreso</label><input id="returnDate" type="datetime-local"></div>
+          <div class="col"><label>Pasajeros</label>
             <select id="passengers"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
           </div>
         </div>
 
-        <div style="margin-top:12px" class="row">
-          <div class="col"><label for="name">Nombre</label><input id="name" type="text" required></div>
-          <div class="col"><label for="phone">Teléfono</label><input id="phone" type="tel" placeholder="+52 6XXXXXXXX"></div>
-          <div class="col"><label for="email">Correo</label><input id="email" type="email"></div>
+        <div class="row" style="margin-top:12px">
+          <div class="col"><label>Nombre</label><input id="name" type="text" required></div>
+          <div class="col"><label>Teléfono</label><input id="phone" type="tel" placeholder="+52 6XXXXXXXX" required></div>
+          <div class="col"><label>Correo</label><input id="email" type="email"></div>
         </div>
 
-        <div style="display:flex;gap:8px;align-items:center;margin-top:14px">
-          <button class="btn" id="submitBtn" type="submit">Reservar ahora</button>
-          <div class="hint">Los registros se guardan localmente y aparecen en el panel administrador abajo. Para envío a Firebase pega tu configuración en el bloque comentado.</div>
+        <div style="margin-top:14px">
+          <button class="btn" type="submit">Reservar ahora</button>
         </div>
       </form>
     </div>
 
-    <div class="card admin">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <h3 style="margin:0">Panel — Reservas guardadas</h3>
-        <div style="display:flex;gap:8px">
-          <button class="btn ghost" id="exportCsv">Exportar CSV</button>
-          <button class="btn ghost" id="clearAll">Eliminar todo</button>
-        </div>
-      </div>
-      <div id="emptyHint" class="hint">No hay reservas aún.</div>
-      <div style="overflow:auto;max-height:420px">
-        <table id="recordsTable" style="display:none">
-          <thead><tr><th>#</th><th>Nombre</th><th>Tel</th><th>Tipo</th><th>Pickup</th><th>Dropoff</th><th>Fecha</th><th>Pasajeros</th><th>Acciones</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
+    <div class="card">
+      <h3>Reservas guardadas</h3>
+      <table id="recordsTable" style="display:none">
+        <thead><tr><th>#</th><th>Nombre</th><th>Tel</th><th>Tipo</th><th>Origen</th><th>Destino</th><th>Fecha</th><th>Pasajeros</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p id="emptyHint">No hay reservas aún.</p>
     </div>
 
-    <footer class="card">
-      <strong>Ride w me Cabo</strong> — Hecho para reservas privadas en Los Cabos, B.C.S. <br>
-      Recomendación: para autocompletar profesional conecta Google Places API o Mapbox y reemplaza la lista interna por consultas reales.
+    <footer>
+      <strong>Ride w me Cabo</strong> — Transporte privado en Los Cabos, B.C.S.
     </footer>
   </div>
 
   <script>
-    // ====== Lista local de lugares comunes en Los Cabos (puedes ampliar) ======
-    const lugares = [
-      'Cabo San Lucas', 'San José del Cabo', 'Todos Santos', 'Aeropuerto de Los Cabos (SJD)',
-      'Marina Cabo San Lucas', 'Playa El Médano', 'Centro Histórico San José del Cabo', 'Pedregal',
-      'Puerto Los Cabos', 'La Ribera', 'El Tezal', 'Chileno Bay', 'Palmilla', 'Cabo del Sol'
-    ];
+    const form = document.getElementById('bookingForm');
+    const table = document.getElementById('recordsTable');
+    const tbody = table.querySelector('tbody');
+    const emptyHint = document.getElementById('emptyHint');
+    const returnWrap = document.getElementById('returnWrap');
 
-    // ====== Helpers ======
-    const $ = id => document.getElementById(id);
-    const pickup = $('pickup'), dropoff = $('dropoff');
-    const pickupList = $('pickupList'), dropoffList = $('dropoffList');
-    const bookingForm = $('bookingForm');
     const recordsKey = 'ridewme_reservas_v1';
 
-    function showSuggestions(inputEl, listEl, arr){
-      const v = inputEl.value.trim().toLowerCase();
-      listEl.innerHTML = '';
-      if(!v){ listEl.style.display='none'; return }
-      const matches = arr.filter(x=>x.toLowerCase().includes(v));
-      if(matches.length===0){ listEl.style.display='none'; return }
-      matches.forEach(m=>{
-        const div = document.createElement('div'); div.textContent = m;
-        div.addEventListener('click', ()=>{ inputEl.value = m; listEl.style.display='none'; });
-        listEl.appendChild(div);
+    document.querySelectorAll('input[name=tripType]').forEach(r => {
+      r.addEventListener('change', () => {
+        returnWrap.style.display = r.value === 'roundtrip' && r.checked ? 'block' : 'none';
       });
-      listEl.style.display='block';
-    }
-
-    pickup.addEventListener('input', ()=>showSuggestions(pickup,pickupList,lugares));
-    dropoff.addEventListener('input', ()=>showSuggestions(dropoff,dropoffList,lugares));
-    document.addEventListener('click', (e)=>{ if(!e.target.closest('.suggestions')){pickupList.style.display='none';dropoffList.style.display='none'}});
-
-    // Trip type toggling
-    const tripRadios = Array.from(document.querySelectorAll('input[name="tripType"]'));
-    const returnWrap = $('returnWrap');
-    tripRadios.forEach(r=>r.addEventListener('change', ()=>{
-      returnWrap.style.display = (r.checked && r.value==='roundtrip') ? 'block' : 'none';
-    }));
-
-    // Use geolocation to fill pickup (best-effort)
-    $('useGeo').addEventListener('click', ()=>{
-      if(!navigator.geolocation){ alert('Geolocalización no disponible en este navegador.'); return }
-      $('useGeo').textContent='Obteniendo ubicación...';
-      navigator.geolocation.getCurrentPosition(async(pos)=>{
-        const lat = pos.coords.latitude, lon = pos.coords.longitude;
-        // Simple reverse-match: if coordinates fall near Los Cabos bounding box, set a friendly label
-        // For production use a reverse-geocoding API (Google, Mapbox, OpenCage, etc.)
-        pickup.value = `Mi ubicación (lat ${lat.toFixed(4)}, lon ${lon.toFixed(4)})`;
-        $('useGeo').textContent='Usar mi ubicación';
-      },(err)=>{ alert('Permiso denegado o error al obtener ubicación.'); $('useGeo').textContent='Usar mi ubicación'; },{timeout:8000});
     });
 
-    // ====== Storage: guardar reservas en localStorage ======
     function loadRecords(){
-      try{ const raw = localStorage.getItem(recordsKey); return raw ? JSON.parse(raw) : []; }catch(e){return []}
+      try { return JSON.parse(localStorage.getItem(recordsKey)) || []; } catch { return []; }
     }
-    function saveRecords(arr){ localStorage.setItem(recordsKey, JSON.stringify(arr)); renderRecords(); }
-
-    function renderRecords(){
-      const rows = loadRecords();
-      const table = $('recordsTable'); const tbody = table.querySelector('tbody'); tbody.innerHTML='';
-      if(rows.length===0){ $('emptyHint').style.display='block'; table.style.display='none'; return }
-      $('emptyHint').style.display='none'; table.style.display='table';
-      rows.forEach((r,i)=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${i+1}</td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.phone||'')}</td><td>${escapeHtml(r.type)}</td><td>${escapeHtml(r.pickup)}</td><td>${escapeHtml(r.dropoff)}</td><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.passengers)}</td><td><button data-i='${i}' class='btn ghost smallBtn'>Eliminar</button></td>`;
-        tbody.appendChild(tr);
-      });
-      // attach delete buttons
-      tbody.querySelectorAll('button[data-i]').forEach(b=>b.addEventListener('click', (e)=>{
-        const i = Number(e.currentTarget.getAttribute('data-i')); const arr = loadRecords(); arr.splice(i,1); saveRecords(arr);
-      }));
+    function saveRecords(records){
+      localStorage.setItem(recordsKey, JSON.stringify(records));
+      renderRecords();
     }
 
-    function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]}); }
-
-    bookingForm.addEventListener('submit', (e)=>{
+    form.addEventListener('submit', e => {
       e.preventDefault();
-      const type = document.querySelector('input[name="tripType"]:checked').value;
+      const type = document.querySelector('input[name=tripType]:checked').value;
       const record = {
         id: Date.now(),
+        name: name.value,
+        phone: phone.value,
+        email: email.value,
         type,
-        pickup: pickup.value.trim(),
-        dropoff: dropoff.value.trim(),
-        date: $('date').value || '',
-        returnDate: $('returnDate').value || '',
-        passengers: $('passengers').value,
-        name: $('name').value.trim(),
-        phone: $('phone').value.trim(),
-        email: $('email').value.trim()
+        pickup: pickup.value,
+        dropoff: dropoff.value,
+        date: date.value,
+        returnDate: returnDate.value,
+        passengers: passengers.value
       };
-      // Basic validation
-      if(!record.pickup || !record.dropoff || !record.date || !record.name){ alert('Completa al menos: partida, destino, fecha y nombre.'); return }
-      const arr = loadRecords(); arr.unshift(record); saveRecords(arr);
-      bookingForm.reset(); returnWrap.style.display='none';
-      alert('Reserva guardada localmente. Si quieres que se envíe a un servidor, puedes conectar Firebase en el código.');
+      const records = loadRecords();
+      records.unshift(record);
+      saveRecords(records);
+      form.reset();
+      returnWrap.style.display = 'none';
     });
 
-    // Clear buttons
-    $('clearForm').addEventListener('click', ()=>{ if(confirm('Limpiar formulario?')) bookingForm.reset(); returnWrap.style.display='none'; });
-    $('clearAll').addEventListener('click', ()=>{ if(confirm('Eliminar todas las reservas guardadas?')){ localStorage.removeItem(recordsKey); renderRecords(); }});
+    function renderRecords(){
+      const records = loadRecords();
+      if(records.length === 0){
+        table.style.display = 'none';
+        emptyHint.style.display = 'block';
+        return;
+      }
+      tbody.innerHTML = '';
+      records.forEach((r, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${i+1}</td><td>${r.name}</td><td>${r.phone}</td><td>${r.type}</td><td>${r.pickup}</td><td>${r.dropoff}</td><td>${r.date}</td><td>${r.passengers}</td>`;
+        tbody.appendChild(tr);
+      });
+      table.style.display = 'table';
+      emptyHint.style.display = 'none';
+    }
 
-    // Export CSV
-    $('exportCsv').addEventListener('click', ()=>{
-      const rows = loadRecords(); if(rows.length===0){ alert('No hay registros para exportar.'); return }
-      const keys = ['id','name','phone','email','type','pickup','dropoff','date','returnDate','passengers'];
-      const csv = [keys.join(',')].concat(rows.map(r=>keys.map(k=>`"${String(r[k]||'').replace(/"/g,'""')}"`).join(','))).join('\n');
-      const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = 'ridewme_reservas.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    });
-
-    // Initial render
     renderRecords();
-
-    // ====== Optional: Firebase example ======
-    /*
-    // Si deseas enviar las reservas a Firebase Realtime Database o Firestore,
-    // descomenta y pega tu configuración de Firebase SDK aquí, luego llama
-    // a `sendToFirebase(record)` dentro del submit (después de saveRecords(arr)).
-
-    // Ejemplo (NO FUNCIONARÁ hasta que pegues tu propia config):
-    // <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    // <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    // const firebaseConfig = {
-    //   apiKey: "TU_API_KEY",
-    //   authDomain: "TU_AUTH_DOMAIN",
-    //   databaseURL: "TU_DATABASE_URL",
-    //   projectId: "TU_PROJECT_ID",
-    //   storageBucket: "TU_STORAGE_BUCKET",
-    //   messagingSenderId: "...",
-    //   appId: "..."
-    // };
-    // firebase.initializeApp(firebaseConfig);
-
-    // function sendToFirebase(record){
-    //   const db = firebase.database();
-    //   const ref = db.ref('reservas');
-    //   ref.push(record).then(()=>console.log('Enviado a Firebase')).catch(e=>console.error(e));
-    //}
-    */
-
-    // ====== Nota final ======
-    // - Para autocompletar real y preciso usa Google Places API (requiere key) o Mapbox.
-    // - Para producción protege la API en servidor. Si quieres te ayudo a integrar Firebase o a mejorar el UI.
   </script>
 </body>
 </html>
+
