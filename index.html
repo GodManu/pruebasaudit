@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ride w me Cabo — Reserva</title>
+  <style>
+    :root{--bg:#0b0b0d;--card:#0f1720;--accent:#e11d48;--muted:#94a3b8;--glass:rgba(255,255,255,0.03)}
+    *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+    body{margin:0;background:linear-gradient(180deg,#071027 0%, #091029 60%);color:#e6eef8;min-height:100vh}
+    .wrap{max-width:980px;margin:28px auto;padding:20px}
+    header{display:flex;gap:16px;align-items:center}
+    .logo{width:72px;height:72px;border-radius:12px;background:linear-gradient(180deg,#111827,#0b1220);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);font-size:18px;box-shadow:0 6px 18px rgba(0,0,0,0.6)}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:4px 0 18px;color:var(--muted)}
+
+    .card{background:var(--card);border-radius:12px;padding:18px;margin-bottom:16px;box-shadow:0 10px 30px rgba(2,6,23,0.5)}
+    form .row{display:flex;gap:12px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input[type=text],input[type=email],input[type=tel],select,input[type=datetime-local]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit}
+    .col{flex:1}
+    .small{width:160px}
+    .btn{background:var(--accent);border:none;padding:10px 14px;border-radius:8px;color:white;font-weight:600;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+    .hint{font-size:12px;color:var(--muted)}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:left}
+    th{background:rgba(255,255,255,0.02);font-weight:600}
+    footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
+    @media(max-width:720px){.row{flex-direction:column}.small{width:100%}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">R w M</div>
+      <div>
+        <h1>Ride w me Cabo — Reserva de transporte privado</h1>
+        <p class="lead">Servicio en Los Cabos, Baja California Sur — reserva Round Trip o One Way.</p>
+      </div>
+    </header>
+
+    <div class="card">
+      <form id="bookingForm">
+        <label>Tipo de viaje:</label><br>
+        <label><input type="radio" name="tripType" value="oneway" checked> One Way</label>
+        <label><input type="radio" name="tripType" value="roundtrip"> Round Trip</label>
+
+        <div class="row" style="margin-top:12px">
+          <div class="col"><label>Punto de partida</label><input id="pickup" type="text" placeholder="Ej. Cabo San Lucas" required></div>
+          <div class="col"><label>Destino</label><input id="dropoff" type="text" placeholder="Ej. Aeropuerto de Los Cabos" required></div>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <div class="col"><label>Fecha / Hora salida</label><input id="date" type="datetime-local" required></div>
+          <div class="col" id="returnWrap" style="display:none"><label>Fecha / Hora regreso</label><input id="returnDate" type="datetime-local"></div>
+          <div class="col"><label>Pasajeros</label>
+            <select id="passengers"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <div class="col"><label>Nombre</label><input id="name" type="text" required></div>
+          <div class="col"><label>Teléfono</label><input id="phone" type="tel" placeholder="+52 6XXXXXXXX" required></div>
+          <div class="col"><label>Correo</label><input id="email" type="email"></div>
+        </div>
+
+        <div style="margin-top:14px">
+          <button class="btn" type="submit">Reservar ahora</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>Reservas guardadas</h3>
+      <table id="recordsTable" style="display:none">
+        <thead><tr><th>#</th><th>Nombre</th><th>Tel</th><th>Tipo</th><th>Origen</th><th>Destino</th><th>Fecha</th><th>Pasajeros</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p id="emptyHint">No hay reservas aún.</p>
+    </div>
+
+    <footer>
+      <strong>Ride w me Cabo</strong> — Transporte privado en Los Cabos, B.C.S.
+    </footer>
+  </div>
+
+  <script>
+    const form = document.getElementById('bookingForm');
+    const table = document.getElementById('recordsTable');
+    const tbody = table.querySelector('tbody');
+    const emptyHint = document.getElementById('emptyHint');
+    const returnWrap = document.getElementById('returnWrap');
+
+    const recordsKey = 'ridewme_reservas_v1';
+
+    document.querySelectorAll('input[name=tripType]').forEach(r => {
+      r.addEventListener('change', () => {
+        returnWrap.style.display = r.value === 'roundtrip' && r.checked ? 'block' : 'none';
+      });
+    });
+
+    function loadRecords(){
+      try { return JSON.parse(localStorage.getItem(recordsKey)) || []; } catch { return []; }
+    }
+    function saveRecords(records){
+      localStorage.setItem(recordsKey, JSON.stringify(records));
+      renderRecords();
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const type = document.querySelector('input[name=tripType]:checked').value;
+      const record = {
+        id: Date.now(),
+        name: name.value,
+        phone: phone.value,
+        email: email.value,
+        type,
+        pickup: pickup.value,
+        dropoff: dropoff.value,
+        date: date.value,
+        returnDate: returnDate.value,
+        passengers: passengers.value
+      };
+      const records = loadRecords();
+      records.unshift(record);
+      saveRecords(records);
+      form.reset();
+      returnWrap.style.display = 'none';
+    });
+
+    function renderRecords(){
+      const records = loadRecords();
+      if(records.length === 0){
+        table.style.display = 'none';
+        emptyHint.style.display = 'block';
+        return;
+      }
+      tbody.innerHTML = '';
+      records.forEach((r, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${i+1}</td><td>${r.name}</td><td>${r.phone}</td><td>${r.type}</td><td>${r.pickup}</td><td>${r.dropoff}</td><td>${r.date}</td><td>${r.passengers}</td>`;
+        tbody.appendChild(tr);
+      });
+      table.style.display = 'table';
+      emptyHint.style.display = 'none';
+    }
+
+    renderRecords();
+  </script>
+</body>
+</html>
